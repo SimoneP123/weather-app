@@ -1,0 +1,68 @@
+import requests
+
+def get_coordinates(city_name):
+    url = f"https://geocoding-api.open-meteo.com/v1/search?name={city_name}&count=1"
+    response = requests.get(url)
+    if response.status_code != 200:
+        return None, None
+    data = response.json()
+    if 'results' not in data or not data['results']:
+        return None, None
+    location = data['results'][0]
+    return location['latitude'], location['longitude']
+
+def get_weather(lat, lon):
+    url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current_weather=true"
+    response = requests.get(url)
+    if response.status_code != 200:
+        return None
+    data = response.json()
+    return data.get('current_weather')
+
+def display_weather(city):
+    lat, lon = get_coordinates(city)
+    if lat is None or lon is None:
+        print(f"\n{city.title()}: Could not retrieve location data. Please check the city name.")
+        return
+
+    weather = get_weather(lat, lon)
+    if weather is None:
+        print(f"\n{city.title()}: Could not retrieve weather data.")
+        return
+
+    print(f"\nWeather in {city.title()}:")
+    print(f"Temperature: {weather['temperature']}°C")
+    print(f"Windspeed: {weather['windspeed']} km/h")
+    print(f"Weather Code: {weather['weathercode']}")
+
+if __name__ == "__main__":
+    test_cities = ["New York", "London", "Tokyo", "Nairobi", "Sydney"]
+    for city in test_cities:
+        display_weather(city)
+
+
+"""
+PROJECT SUMMARY
+===============
+
+📝 Description:
+This simple weather app allows users to retrieve the current weather for multiple cities using the Open-Meteo API. It converts city names to coordinates using the geocoding API and then fetches temperature, windspeed, and weather condition data using those coordinates.
+
+📸 Demonstration:
+Main features include:
+- City-based weather lookup
+- Console output showing temperature, windspeed, and weather code for cities like New York, London, Tokyo, Nairobi, and Sydney
+(Screenshots placeholder – include terminal output screenshots here.)
+
+🤖 AI Use:
+AI helped build the app structure, correct the Open-Meteo endpoint usage, and identify bugs related to missing error handling and sandboxed environments that don’t support input().
+
+🧠 Lessons & Challenges:
+I learned how to integrate public APIs into a Python script and handle API responses with error checks. The main challenge was dealing with invalid city names or empty results from the geocoding API.
+
+🌟 One Thing I'm Proud Of:
+I’m proud that the app successfully displays weather data for multiple global cities using clean and readable code.
+
+🔧 One Thing I'd Improve:
+If I had more time, I’d build a simple graphical user interface (GUI) using Tkinter to make the app more accessible to non-technical users.
+"""
